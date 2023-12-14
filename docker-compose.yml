@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  graphql-server:
+    container_name: graphql-server
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - .env:/app/.env
+    working_dir: /app
+    command: sh -c 'go mod tidy && air'
+
+  dynamodb-local:
+    container_name: dynamodb-local
+    image: "amazon/dynamodb-local:latest"
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+
+  dynamodb-admin:
+    container_name: dynamodb-admin
+    image: aaronshaf/dynamodb-admin:latest
+    environment:
+      - DYNAMO_ENDPOINT=dynamodb-local:8000
+    ports:
+      - 8001:8001
+    depends_on:
+      - dynamodb-local
