@@ -25,6 +25,7 @@ go.work
 docker/
 dynamodb/data/
 
+# Localstack
 tmp/
-bin/handler
+bin/
 .aws

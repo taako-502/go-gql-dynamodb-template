@@ -13,3 +13,9 @@ docker-compose up -d
 cd handler
 go run github.com/99designs/gqlgen generate
 ```
+
+## Deploy
+
+```bash
+make && serverless deploy
+```
