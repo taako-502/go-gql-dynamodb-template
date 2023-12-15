@@ -15,50 +15,46 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
-	"github.com/gin-gonic/gin"
+	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
+
 	"github.com/guregu/dynamo"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
 )
 
-var ginLambda *ginadapter.GinLambda
+var echoLambda *echoadapter.EchoLambda
 
 // Defining the Graphql handler
-func graphqlHandler(db *dynamo.DB) gin.HandlerFunc {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
+func graphqlHandler(db *dynamo.DB) echo.HandlerFunc {
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		DB: db,
 	}}))
 
-	return func(c *gin.Context) {
-		h.ServeHTTP(c.Writer, c.Request)
+	return func(c echo.Context) error {
+		h.ServeHTTP(c.Response(), c.Request())
+		return nil
 	}
 }
 
 // Handler is the main function called by AWS Lambda.
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// TODO: EchoAPIに書き換える
-	// If no name is provided in the HTTP request body, throw an error
-	if ginLambda == nil {
-		// stdout and stderr are sent to AWS CloudWatch Logs
-		log.Printf("Gin cold start")
-		r := gin.Default()
-		hosts := []string{
-			os.Getenv("FRONTEND_HOST_1"),
-			os.Getenv("FRONTEND_HOST_2"),
-			os.Getenv("FRONTEND_HOST_3"),
-		}
-		r.Use(config.SettingCors(hosts))
+	if echoLambda == nil {
+			log.Printf("Echo cold start")
+			e := echo.New()
+			hosts := []string{
+				os.Getenv("FRONTEND_HOST_1"),
+				os.Getenv("FRONTEND_HOST_2"),
+				os.Getenv("FRONTEND_HOST_3"),
+			}
+			e.Use(config.SettingCorsForEcho(hosts))
 
-		// Setting up Gin
-		db := ddbmanager.New("")
-		r.POST("/query", graphqlHandler(db))
+			db := ddbmanager.New("")
+			e.POST("/query", graphqlHandler(db))
 
-		ginLambda = ginadapter.New(r)
+			echoLambda = echoadapter.New(e)
 	}
 
-	return ginLambda.ProxyWithContext(ctx, req)
+	return echoLambda.ProxyWithContext(ctx, req)
 }
 
 func main() {

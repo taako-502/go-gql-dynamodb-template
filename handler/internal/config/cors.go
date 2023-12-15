@@ -3,14 +3,14 @@ package config
 import (
 	"net/http"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	rscors "github.com/rs/cors"
 )
 
-// CORS
-func SettingCors(hosts []string) gin.HandlerFunc {
-	return cors.New(cors.Config{
+// CORS for Echo API Server
+func SettingCorsForEcho(hosts []string) echo.MiddlewareFunc {
+	return middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: hosts,
 		AllowMethods: []string{
 			http.MethodGet,
@@ -25,7 +25,7 @@ func SettingCors(hosts []string) gin.HandlerFunc {
 	})
 }
 
-// CORS(For Local Server)
+// CORS for Local Server 
 func SettingCrosForLocalServer() *rscors.Cors {
 	return rscors.New(rscors.Options{
 		AllowedOrigins: []string{
