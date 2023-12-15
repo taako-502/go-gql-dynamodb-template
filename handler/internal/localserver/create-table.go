@@ -49,7 +49,7 @@ func (d *DDBMnager) TableExists(tableName string) (bool, error) {
 
 func (d *DDBMnager) TableCreate(tableName string, model interface{}) error {
 	if err := d.DB.CreateTable(tableName, model).Run(); err != nil {
-		return  errors.Wrapf(err, "dynamo.DB.Table.Describe(%s)", tableName)
+		return errors.Wrapf(err, "dynamo.DB.Table.Describe(%s)", tableName)
 	}
 	return nil
 }

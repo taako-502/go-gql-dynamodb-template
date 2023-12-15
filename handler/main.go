@@ -39,19 +39,19 @@ func graphqlHandler(db *dynamo.DB) echo.HandlerFunc {
 // Handler is the main function called by AWS Lambda.
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if echoLambda == nil {
-			log.Printf("Echo cold start")
-			e := echo.New()
-			hosts := []string{
-				os.Getenv("FRONTEND_HOST_1"),
-				os.Getenv("FRONTEND_HOST_2"),
-				os.Getenv("FRONTEND_HOST_3"),
-			}
-			e.Use(config.SettingCorsForEcho(hosts))
+		log.Printf("Echo cold start")
+		e := echo.New()
+		hosts := []string{
+			os.Getenv("FRONTEND_HOST_1"),
+			os.Getenv("FRONTEND_HOST_2"),
+			os.Getenv("FRONTEND_HOST_3"),
+		}
+		e.Use(config.SettingCorsForEcho(hosts))
 
-			db := ddbmanager.New("")
-			e.POST("/query", graphqlHandler(db))
+		db := ddbmanager.New("")
+		e.POST("/query", graphqlHandler(db))
 
-			echoLambda = echoadapter.New(e)
+		echoLambda = echoadapter.New(e)
 	}
 
 	return echoLambda.ProxyWithContext(ctx, req)

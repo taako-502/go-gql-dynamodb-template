@@ -25,7 +25,7 @@ func SettingCorsForEcho(hosts []string) echo.MiddlewareFunc {
 	})
 }
 
-// CORS for Local Server 
+// CORS for Local Server
 func SettingCrosForLocalServer() *rscors.Cors {
 	return rscors.New(rscors.Options{
 		AllowedOrigins: []string{
